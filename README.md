@@ -13,7 +13,7 @@ see `.env.sample`
 
 ```bash
 FEDERATION_DB=federationdb
-FEDERATION_HOST=federationpg
+FEDERATION_HOST=postgres-fed
 FEDERATION_USER=user
 FEDERATION_PASSWORD=password
 FEDERATION_DIALECT=postgres

@@ -1,0 +1,10 @@
+[
+  {
+    "name": "stellar-federation-service",
+    "script": "src/index.ts",
+    "instances": "1",
+    "exec_mode" : "cluster",
+    "ignore_watch": ["node_modules", ".git", "lib", "pg_data", "pgadmin_data", "ts-node*", "test"],
+    "watch": true
+  }
+]
