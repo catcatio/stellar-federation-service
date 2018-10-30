@@ -1,6 +1,15 @@
 import { Router } from 'express'
-import getAccountBy from './getAccountBy';
 import accountController from '../controllers/accountController';
+import { Account } from 'src/models';
+
+const accountToJson = (account: Account) => ({
+  id: account.id,
+  name: account.name,
+  domain: account.domain,
+  account: account.account,
+  accountType: account.accountType,
+  internalAccount: account.internalAccount
+})
 
 export const handler = () => {
   const router = Router()
@@ -8,43 +17,37 @@ export const handler = () => {
   router.route('/account')
     .post(async (req, res) => {
       const body = req.body
-      const account = await accountController.create(body.name, body.domain, body.account)
 
-      res.json({
-        id: account.id,
-        name: account.name,
-        domain: account.domain,
-        account: account.account
-      })
+      // TODO: for now, new account has not internal account_id
+      return accountController.create(body.name, body.domain, body.account)
+        .then(account => res.json(accountToJson(account)))
+        .catch(err => res.status(400).send(err.message))
+
     })
+
+  router.route('/account/:id')
     .get(async (req, res) => {
-      const { q, type } = req.query
-      const account = await getAccountBy(type, q)
+      const account = await accountController.getById(req.params.id)
 
       if (!account) {
         return res.status(404).send('Not Found')
       }
 
-      return res.json({
-        id: account.id,
-        name: account.name,
-        domain: account.domain,
-        account: account.account
-      })
+      return res.json(accountToJson(account))
     })
-
-  router.route('/account/:id')
-    .get((req, res) => {
-
+    .put(async (req, res) => {
+      // TODO: support partial update
+      return accountController.update(req.params.id, req.body.name, req.body.domain, req.body.account, req.body.accountType, req.body.internalAccount)
+        .then(() => res.sendStatus(200))
+        .catch(err => res.status(err.message === 'Not Found' ? 404 : 400).send(err.message))
     })
-    .put((req, res) => {
-
+    .patch(async (req, res) => {
+      return res.status(501).send('Not Implemented')
     })
-    .patch((req, res) => {
-
-    })
-    .delete((req, res) => {
-
+    .delete(async (req, res) => {
+      return accountController.delete(req.params.id)
+        .then(() => res.sendStatus(200))
+        .catch(err => res.status(err.message === 'Not Found' ? 404 : 400).send(err.message))
     })
 
   return router

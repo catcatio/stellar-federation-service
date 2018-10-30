@@ -3,17 +3,32 @@ import {
   Model,
   Table,
   PrimaryKey,
-  DataType,
   BeforeCreate,
-  Is
+  Is,
+  CreatedAt,
+  UpdatedAt,
+  AllowNull,
+  Default
 } from 'sequelize-typescript'
 
 import { StrKey } from 'stellar-base/lib/strkey'
-import { md5 } from '../utils/cryptoHelper';
+import { md5 } from '../utils/cryptoHelper'
 
 @Table({
   tableName: 'account',
   timestamps: true,
+  indexes: [
+    {
+      index: 'name_index',
+      unique: true,
+      fields: ['name', 'domain']
+    },
+    {
+      index: 'account_index',
+      unique: false,
+      fields: ['account']
+    }
+  ]
 })
 export class Account extends Model<Account> {
   @PrimaryKey
@@ -24,7 +39,6 @@ export class Account extends Model<Account> {
     if (!StrKey.isValidEd25519PublicKey(value)) {
       throw new Error(`"${value}" is not a valid Ed25519 public key.`);
     }
-    console.log("isValidEd25519PublicKey", true)
   })
   @Column
   public account: string
@@ -35,8 +49,25 @@ export class Account extends Model<Account> {
   @Column
   public domain: string
 
-  @Column(DataType.CHAR)
+  @Default('0')
+  @Column
   public accountType: string
+
+  @Is('isValidEd25519PublicKey', (value: string) => {
+    if (value != null && !StrKey.isValidEd25519PublicKey(value)) {
+      throw new Error(`"${value}" is not a valid Ed25519 public key.`);
+    }
+  })
+
+  @AllowNull
+  @Column
+  public internalAccount: string
+
+  @CreatedAt
+  public createdAt: Date
+
+  @UpdatedAt
+  public updatedAt: Date
 
   @BeforeCreate
   static setId(instance: Account) {

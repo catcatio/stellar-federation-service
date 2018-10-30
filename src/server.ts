@@ -19,7 +19,7 @@ const initDB = async (sequelize) => {
         console.log(`updating schema to ${currentSchemaVersion}`)
         await sequelize.sync({force: true})
         const updateResult = await versionController.saveSchemaVersion(currentSchemaVersion)
-        console.log(`schema updated to: ${updateResult ? updateResult.value : '???'}`)
+        console.log(`schema updated to ${updateResult ? updateResult.value : '???'}`)
       }
 }
 
