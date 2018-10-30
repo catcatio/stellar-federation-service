@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import getAccountBy from './getAccountBy';
+import { memoHash } from '../utils/cryptoHelper';
 
 export const handler = (): Router => {
   const path = '/federation'
@@ -17,7 +18,7 @@ export const handler = (): Router => {
     return res.json({
       'stellar_address': `${account.name}*${account.domain}`,
       'account_id': account.account,
-      'memo': Buffer.from(account.id).toString('hex'),
+      'memo': memoHash(account.internalAccountHash),
       'memo_type': 'hash',
     })
   })

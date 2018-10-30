@@ -4,8 +4,8 @@ services:
     image:                postgres:9.6
     container_name:       postgres-federation
     restart:              unless-stopped
-    ports:
-      - 5432:5432
+    # ports:
+    #   - 5432:5432
     volumes:
       - ./pg_data:/var/lib/postgresql/data
       - ./scripts/initdb.d:/docker-entrypoint-initdb.d
@@ -27,6 +27,11 @@ services:
       - PGADMIN_DEFAULT_EMAIL=${PGADMIN_USER}
       - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_PASSWORD}
       - PGADMIN_PORT=${PGADMIN_PORT:-8800}
+    logging:
+      driver: gelf
+      options:
+        gelf-address: udp://localhost:65001
+        tag: "catcat-fed-pgadmin"
 
   federation-service:
     container_name:       catcat-federation-service

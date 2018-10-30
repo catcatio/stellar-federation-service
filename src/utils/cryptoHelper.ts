@@ -5,7 +5,10 @@ const md5 = (dataStr) => crypto
   .update(dataStr, 'utf8')
   .digest('hex')
 
+const memoHash = (hashData) => Buffer.from(hashData).toString('hex')
+
 export {
   md5,
+  memoHash
 }
 

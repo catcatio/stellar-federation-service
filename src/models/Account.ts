@@ -7,8 +7,10 @@ import {
   Is,
   CreatedAt,
   UpdatedAt,
-  AllowNull,
-  Default
+  Default,
+  DataType,
+  BeforeUpdate,
+  Comment
 } from 'sequelize-typescript'
 
 import { StrKey } from 'stellar-base/lib/strkey'
@@ -24,44 +26,58 @@ import { md5 } from '../utils/cryptoHelper'
       fields: ['name', 'domain']
     },
     {
-      index: 'account_index',
+      index: 'domain_index',
       unique: false,
+      fields: ['domain']
+    },
+    {
+      index: 'account_index',
+      unique: true,
       fields: ['account']
+    },
+    {
+      index: 'hash_index',
+      unique: true,
+      fields: ['internalAccountHash']
     }
   ]
 })
 export class Account extends Model<Account> {
   @PrimaryKey
-  @Column
+  @Default(DataType.UUIDV4)
+  @Column(DataType.UUID)
   public id: string
+
+  @Column({ allowNull: false })
+  public name: string
+
+  @Column({ allowNull: false })
+  public domain: string
 
   @Is('isValidEd25519PublicKey', (value: string) => {
     if (!StrKey.isValidEd25519PublicKey(value)) {
       throw new Error(`"${value}" is not a valid Ed25519 public key.`);
     }
   })
-  @Column
+  @Comment('public account id for federation api')
+  @Column({ allowNull: false })
   public account: string
 
-  @Column
-  public name: string
-
-  @Column
-  public domain: string
-
   @Default('0')
-  @Column
+  @Column({ allowNull: false })
   public accountType: string
 
   @Is('isValidEd25519PublicKey', (value: string) => {
-    if (value != null && !StrKey.isValidEd25519PublicKey(value)) {
+    if (!StrKey.isValidEd25519PublicKey(value)) {
       throw new Error(`"${value}" is not a valid Ed25519 public key.`);
     }
   })
-
-  @AllowNull
-  @Column
+  @Comment('account id for internal api')
+  @Column({ allowNull: false })
   public internalAccount: string
+
+  @Column({ allowNull: false })
+  public internalAccountHash: string
 
   @CreatedAt
   public createdAt: Date
@@ -70,8 +86,13 @@ export class Account extends Model<Account> {
   public updatedAt: Date
 
   @BeforeCreate
-  static setId(instance: Account) {
-    instance.id = md5(instance.account)
-    console.log(instance.id)
+  @BeforeUpdate
+  static setHash(instance: Account) {
+    console.log('sethash', instance.internalAccountHash)
+    if (!instance.internalAccount) {
+      throw new Error(`"Cannot set internalAccountHash, internalAccount is null or empty`);
+    }
+    instance.internalAccountHash = md5(instance.internalAccount)
+    console.log('sethash', instance.internalAccountHash)
   }
 }
