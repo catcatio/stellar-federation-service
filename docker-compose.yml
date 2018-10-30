@@ -41,11 +41,13 @@ services:
     env_file:             .env
     restart:              unless-stopped
     environment:
-      - PORT=${PORT}
+      - PORT=${PORT:-3000}
+      - FED_PORT=${FED_PORT:-3001}
     image:                catcatio/catcat-cloud
     working_dir:          /usr/app
     ports:
       - "${PORT}:${PORT}"
+      - "${FED_PORT}:${FED_PORT}"
     volumes:
       - .:/usr/app
     depends_on:

@@ -23,6 +23,20 @@ const initDB = async (sequelize) => {
       }
 }
 
+const notFoundHandler = (req, res, next) => {
+  const err = new Error('Not Found')
+  const tmp = err as any
+  tmp.status = 404
+  next(err)
+}
+
+const exceptionHandler = (err, req, res, next) => {
+  const status = err.status || 500
+  res.status(status)
+  res.send(`${status} ${err.message}`)
+}
+
+
 export const Server = (config) => {
   const start = async () => {
     console.log('starting server')
@@ -32,21 +46,14 @@ export const Server = (config) => {
     const accountRouter = await AccountRouter()
     const federationRouter = await FederationRouter()
     const app = await initExpress(config)
+    const appFed = await initExpress({port: config.federationPort})
     app.use(accountRouter)
-    app.use(federationRouter)
+    appFed.use(federationRouter)
 
-    app.use((req, res, next) => {
-      const err = new Error('Not Found')
-      const tmp = err as any
-      tmp.status = 404
-      next(err)
-    })
-
-    app.use((err, req, res, next) => {
-      const status = err.status || 500
-      res.status(status)
-      res.send(`${status} ${err.message}`)
-    })
+    app.use(notFoundHandler)
+    app.use(exceptionHandler)
+    appFed.use(notFoundHandler)
+    appFed.use(exceptionHandler)
   }
 
   const stop = async () => {

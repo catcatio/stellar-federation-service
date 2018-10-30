@@ -1,6 +1,8 @@
 const defaultPort = '3000'
+const defaultFedPort = '3001'
 
 const port = parseInt(process.env.PORT || defaultPort, 10)
+const federationPort = parseInt(process.env.FED_PORT || defaultFedPort, 10)
 const sequelizeConfig = {
   name: process.env.FEDERATION_DB || 'federationdb',
   host: process.env.FEDERATION_HOST || 'federationpg',
@@ -11,5 +13,6 @@ const sequelizeConfig = {
 
 export default {
   port,
-  sequelizeConfig
+  federationPort,
+  sequelizeConfig,
 }
