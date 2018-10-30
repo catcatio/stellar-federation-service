@@ -54,4 +54,8 @@ services:
       - postgres
     command: npm run dev:docker
 
+networks:
+  default:
+    external:
+      name: catcat-unicorn-network
 
