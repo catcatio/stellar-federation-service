@@ -1,11 +1,9 @@
 version: '3.1'
 services:
   postgres-fed:
-    image:                postgres:9.6
+    image:                postgres:9.6-alpine
     container_name:       pg-federation
     restart:              unless-stopped
-    # ports:
-    #   - 5432:5432
     volumes:
       - ./pg_data:/var/lib/postgresql/data
       - ./scripts/initdb.d:/docker-entrypoint-initdb.d
@@ -14,24 +12,49 @@ services:
       - POSTGRES_USER=${FEDERATION_USER}
       - POSTGRES_PASSWORD=${FEDERATION_PASSWORD}
       - POSTGRES_DB=${FEDERATION_DB:-8800}
-
-  pgadmin-fed:
-    image:                dpage/pgadmin4
-    container_name:       pga4-federation
-    restart:              unless-stopped
-    ports:
-      - ${PGADMIN_PORT}:80
-    volumes:
-      - ./pgadmin_data:/var/lib/pgadmin
-    environment:
-      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_USER}
-      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_PASSWORD}
-      - PGADMIN_PORT=${PGADMIN_PORT:-8800}
-    logging:
-      driver: gelf
-      options:
-        gelf-address: udp://localhost:65001
-        tag: "catcat-fed-pgadmin"
+    networks:
+      - catcat-unicorn-network
+    dns:
+      - 172.16.238.2
+      - 172.16.238.3
+    entrypoint: ""
+    command:
+      - /bin/sh
+      - -c
+      - |
+        # this command will automatically register the vault UI app as a consul service
+        set -ex
+        [ -d /consul ] || mkdir -p /consul/config /consul/data
+        [ -f /consul/config/postgres-fed.json ] || echo '{"service": {"name": "postgres-fed", "tags": [], "port": ${PORT}}}' > /consul/config/postgres-fed.json
+        type -p curl || (
+          until apk update; do sleep 3; done
+          # chmod 755 consul
+          until apk add curl; do sleep 3; done
+        )
+        grep consul /etc/group || addgroup -g 8000 -S consul
+        grep consul /etc/passwd || adduser -u 8000 -G consul -h /consul -S consul
+        type -p consul || (
+          cd /usr/local/bin
+          until echo 'f97996296ef3905c38c504b35035fb731d3cfd9cad129c9523402a4229c709c5  consul_1.2.3_linux_amd64.zip' | sha256sum -c -; do
+            curl -LO https://releases.hashicorp.com/consul/1.2.3/consul_1.2.3_linux_amd64.zip
+            sleep 3
+          done
+          unzip consul_1.2.3_linux_amd64.zip
+          chmod 755 consul
+          rm consul_1.2.3_linux_amd64.zip
+        )
+        type -p consul-template || (
+          cd /usr/local/bin
+          until curl -L https://releases.hashicorp.com/consul-template/0.19.5/consul-template_0.19.5_linux_amd64.tgz | tar -xz; do
+            sleep 3
+          done
+        )
+        chown -R consul. /consul
+        su - -s /bin/sh consul -c /bin/sh -c 'nohup consul agent -join consul -config-dir=/consul/config -data-dir=/consul/data &'
+        # start the service
+        # su - postgres -c docker-entrypoint.sh postgres
+        docker-entrypoint.sh postgres
+        # postgres
 
   federation-service:
     container_name:       catcat-federation-service
@@ -45,17 +68,56 @@ services:
       - FED_PORT=${FED_PORT:-3001}
     image:                catcatio/catcat-cloud
     working_dir:          /usr/app
-    ports:
-      - "${PORT}:${PORT}"
-      - "${FED_PORT}:${FED_PORT}"
+    # ports:
+    #   - "${PORT}:${PORT}"
+    #   - "${FED_PORT}:${FED_PORT}"
     volumes:
       - .:/usr/app
     depends_on:
       - postgres-fed
-    command: sh scripts/startup.sh
+    networks:
+      - catcat-unicorn-network
+    dns:
+      - 172.16.238.2
+      - 172.16.238.3
+    entrypoint: ""
+    command:
+      - /bin/sh
+      - -c
+      - |
+        # this command will automatically register the vault UI app as a consul service
+        set -ex
+        [ -d /consul ] || mkdir -p /consul/config /consul/data
+        [ -f /consul/config/federation.json ] || echo '{"service": {"name": "federation", "tags": [], "port": ${PORT}}}' > /consul/config/federation.json
+        type -p curl || (
+          until apk update; do sleep 3; done
+          # chmod 755 consul
+          until apk add curl; do sleep 3; done
+        )
+        grep consul /etc/group || addgroup -g 8000 -S consul
+        grep consul /etc/passwd || adduser -u 8000 -G consul -h /consul -S consul
+        type -p consul || (
+          cd /usr/local/bin
+          until echo 'f97996296ef3905c38c504b35035fb731d3cfd9cad129c9523402a4229c709c5  consul_1.2.3_linux_amd64.zip' | sha256sum -c -; do
+            curl -LO https://releases.hashicorp.com/consul/1.2.3/consul_1.2.3_linux_amd64.zip
+            sleep 3
+          done
+          unzip consul_1.2.3_linux_amd64.zip
+          chmod 755 consul
+          rm consul_1.2.3_linux_amd64.zip
+        )
+        type -p consul-template || (
+          cd /usr/local/bin
+          until curl -L https://releases.hashicorp.com/consul-template/0.19.5/consul-template_0.19.5_linux_amd64.tgz | tar -xz; do
+            sleep 3
+          done
+        )
+        chown -R consul. /consul
+        su - -s /bin/sh consul -c /bin/sh -c 'nohup consul agent -join consul -config-dir=/consul/config -data-dir=/consul/data &'
+        # start the service
+        sh /usr/app/scripts/startup.sh
 
 networks:
-  default:
-    external:
-      name: catcat-unicorn-network
+  catcat-unicorn-network:
+    external: true
 
