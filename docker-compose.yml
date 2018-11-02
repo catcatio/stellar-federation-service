@@ -2,7 +2,6 @@ version: '3.1'
 services:
   postgres-fed:
     image:                postgres:9.6-alpine
-    container_name:       pg-federation
     restart:              unless-stopped
     volumes:
       - ./pg_data:/var/lib/postgresql/data
@@ -52,9 +51,8 @@ services:
         chown -R consul. /consul
         su - -s /bin/sh consul -c /bin/sh -c 'nohup consul agent -join consul -config-dir=/consul/config -data-dir=/consul/data &'
         # start the service
-        # su - postgres -c docker-entrypoint.sh postgres
         docker-entrypoint.sh postgres
-        # postgres
+
 
   federation-service:
     container_name:       catcat-federation-service
@@ -66,7 +64,7 @@ services:
     environment:
       - PORT=${PORT:-3000}
       - FED_PORT=${FED_PORT:-3001}
-    image:                catcatio/catcat-cloud
+    image:                catcatio/catcat-federation
     working_dir:          /usr/app
     # ports:
     #   - "${PORT}:${PORT}"
