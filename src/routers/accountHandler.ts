@@ -9,7 +9,8 @@ const accountToJson = (account: Account) => ({
   account: account.account,
   accountType: account.accountType,
   internalAccount: account.internalAccount,
-  internalAccountHash: account.internalAccountHash
+  internalAccountHash: account.internalAccountHash,
+  stellar_address: `${account.name}*${account.domain}`
 })
 
 export const handler = () => {

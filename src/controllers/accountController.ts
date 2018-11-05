@@ -21,6 +21,11 @@ const create = async (values) => {
     if (values.internalAccountHash == null) {
       values.internalAccountHash = ''
     }
+
+    if (!values.accountType) {
+      values.accountType = '0'
+    }
+
     return Account.create<Account>(values)
   } catch (error) {
     return Promise.reject(error)
