@@ -40,7 +40,7 @@ __request:__
 
 ```shell
 curl -X POST http://localhost:3000/account \
-    -d '{"name": "alice","domain":"localhost","account":"GAGYJN4XRLBLXII3ZNCF6PFH7MJOJK4T4K4HJY3RGVQGIE6M3TFDDP7M","AccountType": "0","internalAccount": "GAGYJN4XRLBLXII3ZNCF6PFH7MJOJK4T4K4HJY3RGVQGIE6M3TFDDP7M"}' \
+    -d '{"name": "alice","domain":"localhost","account":"GAGYJN4XRLBLXII3ZNCF6PFH7MJOJK4T4K4HJY3RGVQGIE6M3TFDDP7M","accountType": "0","internalAccount": "GAGYJN4XRLBLXII3ZNCF6PFH7MJOJK4T4K4HJY3RGVQGIE6M3TFDDP7M"}' \
     -H "Content-Type: application/json"
 ```
 
@@ -94,7 +94,7 @@ __request:__
 
 ```shell
 curl -X PUT http://localhost:3000/account/7c26a65d-9bce-4bd0-a5bc-c5a46e615604 \
-    -d '{"name": "alice","domain":"localhost","account":"GBONGOWPP465BTETLNONFFW7WWMFWM2BPKVZCONNG423MWHM7Z7C5HA5","AccountType": "0","internalAccount": "GCQ2MMOPEZJ7DBEPTZADWWHIZCSI3FMYM7URHQBYPCGOXC2FLGWU63K3"}' \
+    -d '{"name": "alice","domain":"localhost","account":"GBONGOWPP465BTETLNONFFW7WWMFWM2BPKVZCONNG423MWHM7Z7C5HA5","accountType": "0","internalAccount": "GCQ2MMOPEZJ7DBEPTZADWWHIZCSI3FMYM7URHQBYPCGOXC2FLGWU63K3"}' \
     -H "Content-Type: application/json"
 ```
 

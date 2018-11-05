@@ -32,7 +32,7 @@ import { md5 } from '../utils/cryptoHelper'
     },
     {
       index: 'account_index',
-      unique: true,
+      unique: false,
       fields: ['account']
     },
     {
@@ -64,6 +64,7 @@ export class Account extends Model<Account> {
   public account: string
 
   @Default('0')
+  @Comment('0: basic, 1: semi, 2: indy')
   @Column({ allowNull: false })
   public accountType: string
 
