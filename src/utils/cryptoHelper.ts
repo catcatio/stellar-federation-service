@@ -1,11 +1,19 @@
 import * as crypto from 'crypto'
 
-const md5 = (dataStr) => crypto
+/**
+ * generate md5 from given text
+ * @param text text to be converted
+ */
+const md5 = (text) => crypto
   .createHash('md5')
-  .update(dataStr, 'utf8')
+  .update(text, 'utf8')
   .digest('hex')
 
-const memoHash = (hashData) => Buffer.from(hashData).toString('hex')
+/**
+ * convert hash string to hex format
+ * @param hash hash string to be converted
+ */
+const memoHash = (hash) => Buffer.from(hash).toString('hex')
 
 export {
   md5,
